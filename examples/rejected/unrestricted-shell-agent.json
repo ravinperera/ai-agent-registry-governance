@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "resource": {
+    "identifier": "urn:air:example.com:operations:unrestricted-shell",
+    "displayName": "Unrestricted Operations Agent",
+    "type": "application/a2a-agent-card+json",
+    "description": "Deliberately unsafe example used to prove that policy validation rejects excessive authority."
+  },
+  "owner": {
+    "team": "",
+    "serviceOwner": "",
+    "securityContact": "not-an-email"
+  },
+  "source": {
+    "repository": "https://github.com/example-org/unrestricted-operations-agent",
+    "version": "main",
+    "license": "Unknown"
+  },
+  "capabilities": ["RunShell", "ReadSecrets", "ChangeInfrastructure"],
+  "permissions": {
+    "filesystem": "write",
+    "shell": "execute",
+    "network": {
+      "egress": "unrestricted",
+      "allowedDestinations": ["*"]
+    },
+    "secrets": "read",
+    "dataClassifications": ["restricted"]
+  },
+  "risk": {
+    "tier": "medium",
+    "humanApprovalRequired": false,
+    "rationale": "This record intentionally understates the risk for policy-testing purposes."
+  },
+  "governance": {
+    "status": "approved",
+    "approvedBy": ["Self approval"],
+    "approvedAt": "2026-07-23",
+    "reviewBy": "2026-07-22",
+    "evidence": [],
+    "retirementPath": "No retirement process has been defined for this deliberately unsafe example."
+  },
+  "runtime": {
+    "sandboxRequired": false,
+    "monitoringRequired": false,
+    "auditLoggingRequired": false
+  }
+}
