@@ -1,0 +1,43 @@
+name: Validate registry governance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Confirm Python runtime
+        run: python3 --version
+
+      - name: Install validation dependencies
+        run: python3 -m pip install --disable-pip-version-check -r requirements-dev.txt
+
+      - name: Download pinned ARD v0.9 catalog schema
+        env:
+          ARD_COMMIT: 5fa2f5aef790b478319f6a3b43adf4661b0ed0e0
+        run: |
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            "https://raw.githubusercontent.com/ards-project/ard-spec/${ARD_COMMIT}/spec/schemas/ai-catalog.schema.json" \
+            --output /tmp/ai-catalog.schema.json
+
+      - name: Validate Python syntax
+        run: python3 -m py_compile scripts/validate_registry.py
+
+      - name: Validate governance records and ARD catalog
+        run: |
+          python3 scripts/validate_registry.py \
+            --ard-schema /tmp/ai-catalog.schema.json

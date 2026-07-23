@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "resource": {
+    "identifier": "urn:air:example.com:devops:terraform-review",
+    "displayName": "Terraform Review Skill",
+    "type": "application/ai-skill+md",
+    "description": "Read-only Terraform review guidance for security, reliability and deployment-readiness checks.",
+    "catalogEntry": "catalog/ai-catalog.json"
+  },
+  "owner": {
+    "team": "Platform Engineering",
+    "serviceOwner": "Example Platform Lead",
+    "securityContact": "security@example.com"
+  },
+  "source": {
+    "repository": "https://github.com/example-org/terraform-review-skill",
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "license": "MIT"
+  },
+  "capabilities": [
+    "TerraformPlanReview",
+    "IAMRiskReview",
+    "DeploymentReadiness"
+  ],
+  "permissions": {
+    "filesystem": "read",
+    "shell": "none",
+    "network": {
+      "egress": "none",
+      "allowedDestinations": []
+    },
+    "secrets": "none",
+    "dataClassifications": ["public", "internal"]
+  },
+  "risk": {
+    "tier": "low",
+    "humanApprovalRequired": false,
+    "rationale": "The skill provides review guidance only and has no write, shell, network or secrets authority."
+  },
+  "governance": {
+    "status": "approved",
+    "approvedBy": ["Platform Engineering", "Security Engineering"],
+    "approvedAt": "2026-07-23",
+    "reviewBy": "2026-10-23",
+    "evidence": [
+      "Source review recorded in fictional ticket GOV-1001",
+      "Permission review confirms read-only operation",
+      "Sample outputs reviewed for unsafe instructions"
+    ],
+    "retirementPath": "Remove the catalog entry, mark this record retired and notify users of the replacement resource."
+  },
+  "runtime": {
+    "sandboxRequired": true,
+    "monitoringRequired": false,
+    "auditLoggingRequired": true
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "resource": {
+    "identifier": "urn:air:example.com:devops:ci-triage",
+    "displayName": "CI Failure Triage MCP Server",
+    "type": "application/mcp-server-card+json",
+    "description": "A proposed MCP server that reads selected CI logs and returns a structured failure summary."
+  },
+  "owner": {
+    "team": "Developer Experience",
+    "serviceOwner": "Example DevEx Lead",
+    "securityContact": "security@example.com"
+  },
+  "source": {
+    "repository": "https://github.com/example-org/ci-triage-mcp",
+    "version": "1.2.0",
+    "license": "Apache-2.0"
+  },
+  "capabilities": [
+    "CILogRead",
+    "FailureClassification",
+    "RemediationSuggestion"
+  ],
+  "permissions": {
+    "filesystem": "read",
+    "shell": "none",
+    "network": {
+      "egress": "restricted",
+      "allowedDestinations": [
+        "api.github.com",
+        "github.com"
+      ]
+    },
+    "secrets": "metadata",
+    "dataClassifications": ["public", "internal", "confidential"]
+  },
+  "risk": {
+    "tier": "medium",
+    "humanApprovalRequired": true,
+    "rationale": "The server may process confidential CI output and metadata, so access scoping and data handling require review."
+  },
+  "governance": {
+    "status": "pending",
+    "evidence": [
+      "Threat model requested",
+      "Data retention review outstanding",
+      "Negative permission tests outstanding"
+    ],
+    "retirementPath": "Remove the resource from approved discovery sources and revoke its GitHub App or token grants."
+  },
+  "runtime": {
+    "sandboxRequired": true,
+    "monitoringRequired": true,
+    "auditLoggingRequired": true
+  }
+}

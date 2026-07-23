@@ -1,0 +1,34 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Example Enterprise Agent Catalog",
+    "documentationUrl": "https://example.com/ai-resources"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:example.com:devops:terraform-review",
+      "displayName": "Terraform Review Skill",
+      "type": "application/ai-skill+md",
+      "url": "https://example.com/ai-resources/terraform-review/SKILL.md",
+      "description": "Read-only Terraform review guidance for identifying security, reliability and maintainability risks before deployment.",
+      "tags": ["terraform", "devops", "security", "review"],
+      "capabilities": [
+        "TerraformPlanReview",
+        "IAMRiskReview",
+        "DeploymentReadiness"
+      ],
+      "representativeQueries": [
+        "review this Terraform change before it is merged",
+        "identify IAM and networking risks in this infrastructure plan",
+        "check whether this Terraform change has a safe rollback path"
+      ],
+      "version": "1.0.0",
+      "updatedAt": "2026-07-23T00:00:00Z",
+      "metadata": {
+        "governanceRecord": "registry/resources/approved-terraform-review-skill.json",
+        "approvalStatus": "approved",
+        "exampleOnly": true
+      }
+    }
+  ]
+}
