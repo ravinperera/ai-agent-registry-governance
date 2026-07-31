@@ -73,6 +73,28 @@ class RegistryValidatorTests(unittest.TestCase):
 
         self.assertTrue(any("only approved governance records" in error for error in errors))
 
+    def test_catalog_rejects_duplicate_identifiers(self) -> None:
+        identifier = "urn:air:example.org:skill:review"
+        entry = {
+            "identifier": identifier,
+            "url": "https://example.org/review",
+            "representativeQueries": ["Review this", "Check this"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "ai-catalog.json"
+            catalog_path.write_text(
+                json.dumps({"entries": [entry, entry]}),
+                encoding="utf-8",
+            )
+
+            errors = validator.validate_catalog(catalog_path, {identifier: {}}, None)
+
+        duplicate_errors = [error for error in errors if "duplicate identifier" in error]
+        self.assertEqual(
+            duplicate_errors,
+            [f"catalog entries[1].identifier: duplicate identifier {identifier}"],
+        )
+
     def test_catalog_accepts_one_published_approved_resource(self) -> None:
         identifier = "urn:air:example.org:skill:review"
         with tempfile.TemporaryDirectory() as directory:
