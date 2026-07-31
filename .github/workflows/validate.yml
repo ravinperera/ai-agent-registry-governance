@@ -35,7 +35,10 @@ jobs:
             --output /tmp/ai-catalog.schema.json
 
       - name: Validate Python syntax
-        run: python3 -m py_compile scripts/validate_registry.py
+        run: python3 -m py_compile scripts/validate_registry.py tests/test_validate_registry.py
+
+      - name: Run validator regression tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
       - name: Validate governance records and ARD catalog
         run: |
