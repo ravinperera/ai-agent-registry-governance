@@ -8,12 +8,13 @@ Contributions are welcome when they improve the usefulness, safety or portabilit
 2. Keep ARD discovery fields separate from organisation-specific governance fields.
 3. Use fictional data in public examples.
 4. Never commit credentials, real approval evidence, private audit reports, customer information or internal security details.
-5. Run the validator locally.
+5. Run the validator and regression tests locally.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
+python3 -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/validate_registry.py
 ```
 
@@ -34,7 +35,7 @@ For a deliberately invalid example, place it under `examples/rejected/` and expl
 
 - [ ] No real secrets, private evidence or confidential data are included.
 - [ ] JSON files parse successfully.
-- [ ] The validator passes.
+- [ ] The validator and regression tests pass.
 - [ ] Approved catalog entries have approved governance records.
 - [ ] Source references are immutable.
 - [ ] Permissions and risk tier agree.
