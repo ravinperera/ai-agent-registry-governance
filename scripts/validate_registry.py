@@ -170,7 +170,10 @@ def validate_catalog(
         if not isinstance(identifier, str):
             errors.append(f"catalog entries[{index}].identifier: missing string identifier")
             continue
-        catalog_ids.add(identifier)
+        if identifier in catalog_ids:
+            errors.append(f"catalog entries[{index}].identifier: duplicate identifier {identifier}")
+        else:
+            catalog_ids.add(identifier)
         if identifier not in approved_records:
             errors.append(f"catalog {identifier}: only approved governance records may be published")
         if bool(entry.get("url")) == bool(entry.get("data")):
