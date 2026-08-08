@@ -131,6 +131,22 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
     return errors
 
 
+def register_identifier(
+    path: Path,
+    record: dict[str, Any],
+    seen_identifiers: dict[str, Path],
+) -> str | None:
+    identifier = record["resource"]["identifier"]
+    first_path = seen_identifiers.get(identifier)
+    if first_path is not None:
+        return (
+            f"registry resource.identifier: duplicate identifier {identifier}; "
+            f"first declared in {first_path}"
+        )
+    seen_identifiers[identifier] = path
+    return None
+
+
 def validate_record(path: Path, schema: dict[str, Any], today: date) -> list[str]:
     try:
         record = load_json(path)
@@ -212,6 +228,7 @@ def main() -> int:
 
     failures = 0
     approved_records: dict[str, dict[str, Any]] = {}
+    seen_identifiers: dict[str, Path] = {}
     record_paths = sorted(args.records_dir.glob("*.json"))
     if not record_paths:
         print(f"ERROR {args.records_dir}: no governance records found")
@@ -224,6 +241,11 @@ def main() -> int:
             print_errors(path, errors)
             continue
         record = load_json(path)
+        duplicate_error = register_identifier(path, record, seen_identifiers)
+        if duplicate_error:
+            failures += 1
+            print_errors(path, [duplicate_error])
+            continue
         if record["governance"]["status"] == "approved":
             approved_records[record["resource"]["identifier"]] = record
         print(f"PASS  {path}")
