@@ -16,6 +16,35 @@ sys.modules[SPEC.name] = validator
 SPEC.loader.exec_module(validator)
 
 
+def approved_record(review_by: str) -> dict[str, object]:
+    return {
+        "source": {"commit": "a" * 40},
+        "owner": {
+            "team": "platform-engineering",
+            "serviceOwner": "service-owner",
+            "securityContact": "security@example.org",
+        },
+        "permissions": {
+            "shell": "none",
+            "filesystem": "read",
+            "secrets": "none",
+            "network": {"egress": "none"},
+        },
+        "risk": {"tier": "low", "humanApprovalRequired": False},
+        "governance": {
+            "status": "approved",
+            "reviewBy": review_by,
+            "approvedBy": ["platform-engineering"],
+            "evidence": "fictional-review-record",
+        },
+        "runtime": {
+            "sandboxRequired": False,
+            "monitoringRequired": False,
+            "auditLoggingRequired": False,
+        },
+    }
+
+
 class RegistryValidatorTests(unittest.TestCase):
     def test_immutable_source_accepts_pins_and_rejects_mutable_refs(self) -> None:
         self.assertTrue(validator.is_immutable_source({"commit": "a" * 40}))
@@ -50,6 +79,50 @@ class RegistryValidatorTests(unittest.TestCase):
         self.assertTrue(any("sandboxRequired" in error for error in errors))
         self.assertTrue(any("monitoringRequired" in error for error in errors))
         self.assertTrue(any("auditLoggingRequired" in error for error in errors))
+
+    def test_approved_resource_review_expires_on_review_date(self) -> None:
+        today = date(2026, 8, 9)
+
+        errors = validator.policy_errors(approved_record("2026-08-09"), today)
+        future_errors = validator.policy_errors(approved_record("2026-08-10"), today)
+
+        self.assertTrue(any("governance.reviewBy" in error for error in errors))
+        self.assertFalse(any("governance.reviewBy" in error for error in future_errors))
+
+    def test_restricted_egress_requires_explicit_non_wildcard_allowlist(self) -> None:
+        record = approved_record("2026-08-10")
+        network = record["permissions"]["network"]
+        network["egress"] = "restricted"
+        network["allowedDestinations"] = ["api.example.org"]
+
+        errors = validator.policy_errors(record, date(2026, 8, 9))
+        self.assertFalse(any("allowedDestinations" in error for error in errors))
+
+        network["allowedDestinations"] = ["*"]
+        wildcard_errors = validator.policy_errors(record, date(2026, 8, 9))
+        self.assertTrue(any("allowedDestinations" in error for error in wildcard_errors))
+
+        network["allowedDestinations"] = []
+        empty_errors = validator.policy_errors(record, date(2026, 8, 9))
+        self.assertTrue(any("allowedDestinations" in error for error in empty_errors))
+
+    def test_approved_resource_rejects_unrestricted_egress(self) -> None:
+        record = approved_record("2026-08-10")
+        record["permissions"]["network"] = {"egress": "unrestricted"}
+        record["risk"] = {"tier": "high", "humanApprovalRequired": True}
+        record["governance"]["approvedBy"] = ["platform-engineering", "security"]
+        record["runtime"] = {
+            "sandboxRequired": True,
+            "monitoringRequired": True,
+            "auditLoggingRequired": True,
+        }
+
+        errors = validator.policy_errors(record, date(2026, 8, 9))
+
+        self.assertEqual(
+            [error for error in errors if "permissions.network.egress" in error],
+            ["policy permissions.network.egress: unrestricted egress cannot be approved by the baseline policy"],
+        )
 
     def test_catalog_rejects_resources_without_approved_records(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
