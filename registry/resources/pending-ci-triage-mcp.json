@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "resource": {
     "identifier": "urn:air:example.com:devops:ci-triage",
     "displayName": "CI Failure Triage MCP Server",
@@ -16,27 +16,38 @@
     "version": "1.2.0",
     "license": "Apache-2.0"
   },
-  "capabilities": [
-    "CILogRead",
-    "FailureClassification",
-    "RemediationSuggestion"
-  ],
+  "capabilities": ["CILogRead", "FailureClassification", "RemediationSuggestion"],
   "permissions": {
     "filesystem": "read",
     "shell": "none",
     "network": {
       "egress": "restricted",
-      "allowedDestinations": [
-        "api.github.com",
-        "github.com"
-      ]
+      "allowedDestinations": ["api.github.com", "github.com"]
     },
     "secrets": "metadata",
     "dataClassifications": ["public", "internal", "confidential"]
   },
+  "delegation": {
+    "allowed": false,
+    "maxHops": 0,
+    "scopeNarrowingRequired": true,
+    "allowedDelegates": []
+  },
+  "humanOversight": {
+    "mode": "session",
+    "approvalRequiredFor": ["initial-connection"],
+    "delegatedApprovalAllowed": false,
+    "approvalProvenanceRequired": false
+  },
+  "provenance": {
+    "required": false,
+    "mechanism": "runtime-audit-log",
+    "tamperEvident": false,
+    "recordsOriginatingHuman": false,
+    "recordsDelegationChain": false
+  },
   "risk": {
     "tier": "medium",
-    "humanApprovalRequired": true,
     "rationale": "The server may process confidential CI output and metadata, so access scoping and data handling require review."
   },
   "governance": {
