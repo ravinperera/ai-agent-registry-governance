@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "resource": {
     "identifier": "urn:air:example.com:operations:unrestricted-shell",
     "displayName": "Unrestricted Operations Agent",
     "type": "application/a2a-agent-card+json",
-    "description": "Deliberately unsafe example used to prove that policy validation rejects excessive authority."
+    "description": "Deliberately unsafe example used to prove that policy validation rejects excessive and untraceable authority."
   },
   "owner": {
     "team": "",
@@ -27,9 +27,27 @@
     "secrets": "read",
     "dataClassifications": ["restricted"]
   },
+  "delegation": {
+    "allowed": true,
+    "maxHops": 5,
+    "scopeNarrowingRequired": false,
+    "allowedDelegates": ["*"]
+  },
+  "humanOversight": {
+    "mode": "session",
+    "approvalRequiredFor": [],
+    "delegatedApprovalAllowed": true,
+    "approvalProvenanceRequired": false
+  },
+  "provenance": {
+    "required": false,
+    "mechanism": "none",
+    "tamperEvident": false,
+    "recordsOriginatingHuman": false,
+    "recordsDelegationChain": false
+  },
   "risk": {
     "tier": "medium",
-    "humanApprovalRequired": false,
     "rationale": "This record intentionally understates the risk for policy-testing purposes."
   },
   "governance": {
