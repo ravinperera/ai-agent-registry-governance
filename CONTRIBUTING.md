@@ -23,11 +23,14 @@ python scripts/validate_registry.py
 For a valid resource:
 
 1. Copy an existing record under `registry/resources/`.
-2. Use a unique `urn:air:` identifier.
+2. Use schema version `1.1` and a unique `urn:air:` identifier.
 3. Pin the source with a full commit SHA, semantic version or SHA-256 digest.
 4. Declare all permissions and data classifications.
-5. Set new submissions to `pending` unless the example includes complete fictional approval evidence.
-6. Add approved resources to `catalog/ai-catalog.json`.
+5. Declare whether delegation is allowed, the maximum hops, permitted delegates and mandatory scope narrowing.
+6. Define the human-oversight mode and explicitly name consequential action classes when action-level approval is required.
+7. Define provenance requirements, including whether the originating human and delegation chain must be retained.
+8. Set new submissions to `pending` unless the example includes complete fictional approval evidence.
+9. Add approved resources to `catalog/ai-catalog.json`.
 
 For a deliberately invalid example, place it under `examples/rejected/` and explain which policy controls it is expected to violate.
 
@@ -39,9 +42,13 @@ For a deliberately invalid example, place it under `examples/rejected/` and expl
 - [ ] Approved catalog entries have approved governance records.
 - [ ] Source references are immutable.
 - [ ] Permissions and risk tier agree.
+- [ ] Delegation is disabled unless needed; when enabled, it is bounded and scope-narrowing.
+- [ ] High/critical authority has action-level human oversight.
+- [ ] Required provenance identifies the originating human and, for delegation, records the delegation chain.
+- [ ] Provenance is not presented as a substitute for runtime authorisation enforcement.
 - [ ] Approval and review dates are explicit.
 - [ ] Documentation distinguishes this project's policy from the ARD specification.
-- [ ] New policy rules include a positive and negative example where practical.
+- [ ] New policy rules include regression coverage and positive/negative examples where practical.
 
 ## Updating the ARD version
 
@@ -60,3 +67,4 @@ The workflow pins an upstream ARD schema commit. A version update should:
 - Keep the validator deterministic and credential-free.
 - Add dependencies only when they provide clear validation value.
 - Make policy failures actionable by naming the field and expected correction.
+- Keep governance intent, runtime enforcement and provenance evidence as separate concepts.
