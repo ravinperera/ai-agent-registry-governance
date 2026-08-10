@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.1",
+  "resource": {
+    "identifier": "urn:air:example.com:platform:production-deployment",
+    "displayName": "Production Deployment Agent",
+    "type": "application/a2a-agent-card+json",
+    "description": "A proposed deployment agent that coordinates production releases while delegating verification to explicitly approved specialist agents."
+  },
+  "owner": {
+    "team": "Platform Engineering",
+    "serviceOwner": "Example Platform Lead",
+    "securityContact": "security@example.com"
+  },
+  "source": {
+    "repository": "https://github.com/example-org/production-deployment-agent",
+    "commit": "89abcdef0123456789abcdef0123456789abcdef",
+    "license": "Apache-2.0"
+  },
+  "capabilities": [
+    "ProductionDeployment",
+    "DeploymentVerification",
+    "RollbackCoordination"
+  ],
+  "permissions": {
+    "filesystem": "read",
+    "shell": "none",
+    "network": {
+      "egress": "restricted",
+      "allowedDestinations": [
+        "api.github.com",
+        "deployments.example.com"
+      ]
+    },
+    "secrets": "metadata",
+    "dataClassifications": ["internal", "confidential"]
+  },
+  "delegation": {
+    "allowed": true,
+    "maxHops": 2,
+    "scopeNarrowingRequired": true,
+    "allowedDelegates": [
+      "deployment-verification-agent",
+      "security-policy-agent"
+    ]
+  },
+  "humanOversight": {
+    "mode": "per-consequential-action",
+    "approvalRequiredFor": [
+      "production-deployment",
+      "production-rollback"
+    ],
+    "delegatedApprovalAllowed": false,
+    "approvalProvenanceRequired": true
+  },
+  "provenance": {
+    "required": true,
+    "mechanism": "signed-delegation-chain",
+    "tamperEvident": true,
+    "recordsOriginatingHuman": true,
+    "recordsDelegationChain": true
+  },
+  "risk": {
+    "tier": "high",
+    "rationale": "The agent can coordinate production changes and delegate verification, so consequential actions require direct human approval and traceable delegation evidence."
+  },
+  "governance": {
+    "status": "pending",
+    "evidence": [
+      "Threat model requested",
+      "Negative delegation tests required",
+      "Human approval enforcement test required",
+      "Provenance tamper-detection test required"
+    ],
+    "retirementPath": "Disable the deployment identity, revoke integration grants, remove discovery records and retain approval and delegation evidence for the required audit period."
+  },
+  "runtime": {
+    "sandboxRequired": true,
+    "monitoringRequired": true,
+    "auditLoggingRequired": true
+  }
+}
