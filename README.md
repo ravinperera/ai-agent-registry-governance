@@ -47,7 +47,7 @@ The validation command checks:
 - approval evidence and review expiry;
 - shell, secrets and network-egress controls;
 - risk-tier requirements;
-- delegation hop limits and mandatory scope narrowing;
+- delegation hop limits, explicit delegate allowlists and mandatory scope narrowing;
 - provenance requirements for delegated authority;
 - action-level human oversight for consequential authority;
 - sandboxing, monitoring and audit requirements;
@@ -63,7 +63,8 @@ The GitHub Actions workflow downloads the ARD v0.9 JSON Schema from a pinned ups
 │   └── ai-catalog.json
 ├── registry/resources/
 │   ├── approved-terraform-review-skill.json
-│   └── pending-ci-triage-mcp.json
+│   ├── pending-ci-triage-mcp.json
+│   └── pending-production-deployment-agent.json
 ├── examples/rejected/
 │   └── unrestricted-shell-agent.json
 ├── schemas/
@@ -71,6 +72,7 @@ The GitHub Actions workflow downloads the ARD v0.9 JSON Schema from a pinned ups
 ├── scripts/
 │   └── validate_registry.py
 ├── tests/
+│   ├── test_schema_delegation.py
 │   └── test_validate_registry.py
 ├── docs/
 │   ├── ard-alignment.md
@@ -107,7 +109,7 @@ A record now covers four different control surfaces.
 }
 ```
 
-The baseline requires delegated authority to narrow rather than expand and treats any delegation capability as at least medium risk.
+The baseline requires delegated authority to narrow rather than expand, requires an explicit delegate allowlist, and treats any delegation capability as at least medium risk.
 
 ### 3. Human oversight
 
@@ -154,6 +156,16 @@ Provenance proves or records authority history; it does **not** replace runtime 
 
 See [Delegation, human oversight and provenance](docs/delegation-provenance.md).
 
+## Examples
+
+The approved Terraform review skill demonstrates a low-risk resource with no delegation authority.
+
+The pending CI triage MCP server demonstrates medium-risk read-only access to internal and confidential CI data.
+
+The pending production deployment agent demonstrates the new high-risk model: bounded agent-to-agent delegation, explicit approved delegates, per-consequential-action human approval and tamper-evident provenance linked to the originating human.
+
+The rejected unrestricted shell agent deliberately violates source, authority, delegation, provenance, oversight and runtime controls to prove that unsafe records fail validation.
+
 ## Example governance decision
 
 An approved, read-only Terraform review skill should have:
@@ -175,7 +187,7 @@ A resource using an unpinned branch, unrestricted egress, shell execution, secre
 2. **Resource approval is not action approval.** Approving an agent does not authorise every consequential action it can technically perform.
 3. **Pin what was reviewed.** Branch names such as `main` and tags such as `latest` are not approval evidence.
 4. **Declare authority before connection.** Filesystem, shell, network, secrets and data access must be explicit.
-5. **Delegate narrowly.** Delegated authority must not exceed the authority that was received.
+5. **Delegate narrowly.** Delegated authority must not exceed the authority that was received, and delegates must be explicitly permitted.
 6. **Keep the human in the authority chain.** High-impact actions require traceable human approval under the baseline policy.
 7. **Approvals expire.** Every approved record needs a review date and retirement path.
 8. **Higher authority requires stronger evidence.** Shell execution, write access, secrets access, unrestricted egress and delegation increase governance requirements.
