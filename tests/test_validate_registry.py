@@ -30,7 +30,26 @@ def approved_record(review_by: str) -> dict[str, object]:
             "secrets": "none",
             "network": {"egress": "none"},
         },
-        "risk": {"tier": "low", "humanApprovalRequired": False},
+        "delegation": {
+            "allowed": False,
+            "maxHops": 0,
+            "scopeNarrowingRequired": True,
+            "allowedDelegates": [],
+        },
+        "humanOversight": {
+            "mode": "none",
+            "approvalRequiredFor": [],
+            "delegatedApprovalAllowed": False,
+            "approvalProvenanceRequired": False,
+        },
+        "provenance": {
+            "required": False,
+            "mechanism": "none",
+            "tamperEvident": False,
+            "recordsOriginatingHuman": False,
+            "recordsDelegationChain": False,
+        },
+        "risk": {"tier": "low"},
         "governance": {
             "status": "approved",
             "reviewBy": review_by,
@@ -53,7 +72,7 @@ class RegistryValidatorTests(unittest.TestCase):
         self.assertFalse(validator.is_immutable_source({"version": "main"}))
         self.assertFalse(validator.is_immutable_source({"version": "latest"}))
 
-    def test_elevated_authority_requires_high_risk_controls(self) -> None:
+    def test_elevated_authority_requires_high_risk_action_controls(self) -> None:
         record = {
             "source": {"commit": "a" * 40},
             "owner": {},
@@ -63,7 +82,20 @@ class RegistryValidatorTests(unittest.TestCase):
                 "secrets": "none",
                 "network": {"egress": "none"},
             },
-            "risk": {"tier": "medium", "humanApprovalRequired": False},
+            "delegation": {"allowed": False},
+            "humanOversight": {
+                "mode": "session",
+                "approvalRequiredFor": [],
+                "delegatedApprovalAllowed": True,
+                "approvalProvenanceRequired": False,
+            },
+            "provenance": {
+                "required": False,
+                "tamperEvident": False,
+                "recordsOriginatingHuman": False,
+                "recordsDelegationChain": False,
+            },
+            "risk": {"tier": "medium"},
             "governance": {"status": "pending", "approvedBy": []},
             "runtime": {
                 "sandboxRequired": False,
@@ -75,10 +107,60 @@ class RegistryValidatorTests(unittest.TestCase):
         errors = validator.policy_errors(record, date(2026, 7, 31))
 
         self.assertTrue(any("risk.tier" in error for error in errors))
-        self.assertTrue(any("humanApprovalRequired" in error for error in errors))
+        self.assertTrue(any("humanOversight.mode" in error for error in errors))
+        self.assertTrue(any("approvalRequiredFor" in error for error in errors))
+        self.assertTrue(any("approvalProvenanceRequired" in error for error in errors))
+        self.assertTrue(any("delegatedApprovalAllowed" in error for error in errors))
+        self.assertTrue(any("provenance.required" in error for error in errors))
         self.assertTrue(any("sandboxRequired" in error for error in errors))
         self.assertTrue(any("monitoringRequired" in error for error in errors))
         self.assertTrue(any("auditLoggingRequired" in error for error in errors))
+
+    def test_delegation_requires_medium_risk_scope_narrowing_and_provenance(self) -> None:
+        record = approved_record("2026-08-10")
+        record["delegation"] = {
+            "allowed": True,
+            "maxHops": 2,
+            "scopeNarrowingRequired": False,
+            "allowedDelegates": ["review-agent"],
+        }
+
+        errors = validator.policy_errors(record, date(2026, 8, 9))
+
+        self.assertTrue(any("risk.tier" in error for error in errors))
+        self.assertTrue(any("scopeNarrowingRequired" in error for error in errors))
+        self.assertTrue(any("provenance.required" in error for error in errors))
+        self.assertTrue(any("provenance.tamperEvident" in error for error in errors))
+        self.assertTrue(any("recordsOriginatingHuman" in error for error in errors))
+        self.assertTrue(any("recordsDelegationChain" in error for error in errors))
+        self.assertTrue(any("auditLoggingRequired" in error for error in errors))
+
+    def test_well_controlled_delegation_passes_delegation_policy(self) -> None:
+        record = approved_record("2026-08-10")
+        record["risk"] = {"tier": "medium"}
+        record["delegation"] = {
+            "allowed": True,
+            "maxHops": 2,
+            "scopeNarrowingRequired": True,
+            "allowedDelegates": ["review-agent"],
+        }
+        record["provenance"] = {
+            "required": True,
+            "mechanism": "signed-delegation-chain",
+            "tamperEvident": True,
+            "recordsOriginatingHuman": True,
+            "recordsDelegationChain": True,
+        }
+        record["runtime"]["auditLoggingRequired"] = True
+
+        errors = validator.policy_errors(record, date(2026, 8, 9))
+        delegation_errors = [
+            error
+            for error in errors
+            if "delegation." in error or "provenance." in error or "auditLoggingRequired" in error
+        ]
+
+        self.assertEqual(delegation_errors, [])
 
     def test_approved_resource_review_expires_on_review_date(self) -> None:
         today = date(2026, 8, 9)
@@ -109,7 +191,20 @@ class RegistryValidatorTests(unittest.TestCase):
     def test_approved_resource_rejects_unrestricted_egress(self) -> None:
         record = approved_record("2026-08-10")
         record["permissions"]["network"] = {"egress": "unrestricted"}
-        record["risk"] = {"tier": "high", "humanApprovalRequired": True}
+        record["risk"] = {"tier": "high"}
+        record["humanOversight"] = {
+            "mode": "per-consequential-action",
+            "approvalRequiredFor": ["network-access"],
+            "delegatedApprovalAllowed": False,
+            "approvalProvenanceRequired": True,
+        }
+        record["provenance"] = {
+            "required": True,
+            "mechanism": "signed-approval",
+            "tamperEvident": True,
+            "recordsOriginatingHuman": True,
+            "recordsDelegationChain": False,
+        }
         record["governance"]["approvedBy"] = ["platform-engineering", "security"]
         record["runtime"] = {
             "sandboxRequired": True,
@@ -155,10 +250,7 @@ class RegistryValidatorTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as directory:
             catalog_path = Path(directory) / "ai-catalog.json"
-            catalog_path.write_text(
-                json.dumps({"entries": [entry, entry]}),
-                encoding="utf-8",
-            )
+            catalog_path.write_text(json.dumps({"entries": [entry, entry]}), encoding="utf-8")
 
             errors = validator.validate_catalog(catalog_path, {identifier: {}}, None)
 
