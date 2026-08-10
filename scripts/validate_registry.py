@@ -65,6 +65,9 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
     owner = record.get("owner", {})
     permissions = record.get("permissions", {})
     network = permissions.get("network", {})
+    delegation = record.get("delegation", {})
+    oversight = record.get("humanOversight", {})
+    provenance = record.get("provenance", {})
     risk = record.get("risk", {})
     governance = record.get("governance", {})
     runtime = record.get("runtime", {})
@@ -87,13 +90,44 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
             egress == "unrestricted",
         ]
     )
+    delegation_allowed = delegation.get("allowed") is True
+    consequential = elevated_authority or tier in {"high", "critical"}
 
     if elevated_authority and tier not in {"high", "critical"}:
         errors.append("policy risk.tier: write, shell, secrets or unrestricted egress requires high or critical risk")
 
-    if tier in {"high", "critical"} or elevated_authority:
-        if risk.get("humanApprovalRequired") is not True:
-            errors.append("policy risk.humanApprovalRequired: elevated authority requires human approval")
+    if delegation_allowed and tier == "low":
+        errors.append("policy risk.tier: any authority delegation requires at least medium risk")
+
+    if delegation_allowed:
+        if delegation.get("scopeNarrowingRequired") is not True:
+            errors.append("policy delegation.scopeNarrowingRequired: delegated authority must only narrow, never expand")
+        if provenance.get("required") is not True:
+            errors.append("policy provenance.required: delegated authority requires provenance evidence")
+        if provenance.get("tamperEvident") is not True:
+            errors.append("policy provenance.tamperEvident: delegation evidence must be tamper-evident")
+        if provenance.get("recordsOriginatingHuman") is not True:
+            errors.append("policy provenance.recordsOriginatingHuman: delegation must retain the originating human")
+        if provenance.get("recordsDelegationChain") is not True:
+            errors.append("policy provenance.recordsDelegationChain: delegation must retain the full delegation chain")
+        if runtime.get("auditLoggingRequired") is not True:
+            errors.append("policy runtime.auditLoggingRequired: delegation requires audit logging")
+
+    if consequential:
+        if oversight.get("mode") not in {"per-consequential-action", "always"}:
+            errors.append("policy humanOversight.mode: high-risk or elevated authority requires action-level human oversight")
+        if not oversight.get("approvalRequiredFor"):
+            errors.append("policy humanOversight.approvalRequiredFor: consequential actions must be named explicitly")
+        if oversight.get("approvalProvenanceRequired") is not True:
+            errors.append("policy humanOversight.approvalProvenanceRequired: consequential actions require approval provenance")
+        if oversight.get("delegatedApprovalAllowed") is True:
+            errors.append("policy humanOversight.delegatedApprovalAllowed: baseline policy forbids delegated approval for high-risk authority")
+        if provenance.get("required") is not True:
+            errors.append("policy provenance.required: consequential authority requires provenance evidence")
+        if provenance.get("tamperEvident") is not True:
+            errors.append("policy provenance.tamperEvident: consequential authority requires tamper-evident evidence")
+        if provenance.get("recordsOriginatingHuman") is not True:
+            errors.append("policy provenance.recordsOriginatingHuman: consequential authority must identify the originating human")
         if runtime.get("sandboxRequired") is not True:
             errors.append("policy runtime.sandboxRequired: elevated authority requires a sandbox")
         if runtime.get("monitoringRequired") is not True:
