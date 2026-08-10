@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "resource": {
     "identifier": "urn:air:example.com:devops:terraform-review",
     "displayName": "Terraform Review Skill",
@@ -17,25 +17,36 @@
     "commit": "0123456789abcdef0123456789abcdef01234567",
     "license": "MIT"
   },
-  "capabilities": [
-    "TerraformPlanReview",
-    "IAMRiskReview",
-    "DeploymentReadiness"
-  ],
+  "capabilities": ["TerraformPlanReview", "IAMRiskReview", "DeploymentReadiness"],
   "permissions": {
     "filesystem": "read",
     "shell": "none",
-    "network": {
-      "egress": "none",
-      "allowedDestinations": []
-    },
+    "network": {"egress": "none", "allowedDestinations": []},
     "secrets": "none",
     "dataClassifications": ["public", "internal"]
   },
+  "delegation": {
+    "allowed": false,
+    "maxHops": 0,
+    "scopeNarrowingRequired": true,
+    "allowedDelegates": []
+  },
+  "humanOversight": {
+    "mode": "none",
+    "approvalRequiredFor": [],
+    "delegatedApprovalAllowed": false,
+    "approvalProvenanceRequired": false
+  },
+  "provenance": {
+    "required": false,
+    "mechanism": "none",
+    "tamperEvident": false,
+    "recordsOriginatingHuman": false,
+    "recordsDelegationChain": false
+  },
   "risk": {
     "tier": "low",
-    "humanApprovalRequired": false,
-    "rationale": "The skill provides review guidance only and has no write, shell, network or secrets authority."
+    "rationale": "The skill provides review guidance only and has no write, shell, network, secrets or delegation authority."
   },
   "governance": {
     "status": "approved",
