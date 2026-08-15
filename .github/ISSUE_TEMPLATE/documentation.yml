@@ -1,0 +1,42 @@
+name: Documentation improvement
+description: Improve guidance, examples, operating-model documentation, or adoption clarity.
+title: "Docs: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep reports public-safe. Security-sensitive findings should use the repository security policy instead of a public issue.
+  - type: textarea
+    id: location
+    attributes:
+      label: Affected documentation
+      description: Which page, section, or example should change?
+      placeholder: README.md, docs/operating-model.md, examples/...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or missing?
+      description: Explain the reader problem, outdated wording, missing example, or ambiguity.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Suggested improvement
+      description: Describe the expected result or wording direction.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation notes
+      description: Mention links, examples, commands, or policy statements that should remain consistent.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-repository safety
+      options:
+        - label: I have not included credentials, private approval evidence, customer data, internal endpoints, or sensitive security details.
+          required: true

@@ -1,0 +1,54 @@
+name: Governance or validator change
+description: Propose a change to governance records, schemas, policy validation, or catalog behaviour.
+title: "Governance: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use fictional/public-safe details only. Do not include credentials, private approval evidence, customer data, internal endpoints, or sensitive security findings.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Governance record or schema
+        - Validator or policy rule
+        - Catalog publication rule
+        - Delegation, provenance, or human oversight
+        - Example data
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Governance problem
+      description: What ambiguity, gap, or unsafe behaviour should be addressed?
+      placeholder: Describe the current behaviour and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome
+      description: Describe the desired policy or validation result without including sensitive operational details.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Likely files or records
+      description: List relevant repository paths if known.
+      placeholder: schemas/..., scripts/..., registry/..., catalog/...
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation approach
+      description: What positive and negative cases should prove the change?
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-repository safety
+      options:
+        - label: I have not included credentials, private trust evidence, customer data, internal security details, or real approval artifacts.
+          required: true

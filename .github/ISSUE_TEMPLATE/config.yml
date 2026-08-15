@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reporting guidance
+    url: https://github.com/ravinperera/ai-agent-registry-governance/security/policy
+    about: Report vulnerabilities or sensitive security concerns privately when possible; do not post secrets or private evidence in a public issue.
