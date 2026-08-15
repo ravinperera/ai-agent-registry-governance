@@ -40,6 +40,9 @@ jobs:
       - name: Run validator regression tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
+      - name: Validate repository-local Markdown links
+        run: python3 scripts/check_markdown_links.py
+
       - name: Validate governance records and ARD catalog
         run: |
           python3 scripts/validate_registry.py \
