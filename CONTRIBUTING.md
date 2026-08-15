@@ -15,8 +15,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
 python3 -m unittest discover -s tests -p 'test_*.py' -v
+python scripts/check_markdown_links.py
 python scripts/validate_registry.py
 ```
+
+The Markdown check is offline: it validates repository-local targets without fetching external URLs and rejects links that escape the repository root.
 
 ## Adding a resource example
 
@@ -39,6 +42,7 @@ For a deliberately invalid example, place it under `examples/rejected/` and expl
 - [ ] No real secrets, private evidence or confidential data are included.
 - [ ] JSON files parse successfully.
 - [ ] The validator and regression tests pass.
+- [ ] Repository-local Markdown links pass the offline link check.
 - [ ] Approved catalog entries have approved governance records.
 - [ ] Source references are immutable.
 - [ ] Permissions and risk tier agree.
