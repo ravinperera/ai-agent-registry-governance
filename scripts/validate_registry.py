@@ -18,11 +18,21 @@ MUTABLE_REFS = {"latest", "main", "master", "develop", "development", "head", "t
 SEMVER_RE = re.compile(r"^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 
 
+def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Build a JSON object while rejecting ambiguous duplicate keys."""
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate object key: {key}")
+        result[key] = value
+    return result
+
+
 def load_json(path: Path) -> dict[str, Any]:
     try:
         with path.open(encoding="utf-8") as handle:
-            value = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+            value = json.load(handle, object_pairs_hook=reject_duplicate_keys)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError(f"{path}: cannot read valid JSON: {exc}") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{path}: top-level JSON value must be an object")
