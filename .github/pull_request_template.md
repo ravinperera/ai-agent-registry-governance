@@ -15,10 +15,12 @@
 
 ## Validation
 
-<!-- Include exact commands and results. -->
+<!-- Include exact commands and results. Use the immutable ARD schema pin documented in CONTRIBUTING.md. -->
 
 - [ ] `python3 -m unittest discover -s tests -p 'test_*.py' -v`
-- [ ] `python scripts/validate_registry.py`
+- [ ] `python3 scripts/check_markdown_links.py`
+- [ ] Downloaded the pinned ARD schema documented in `CONTRIBUTING.md`.
+- [ ] `python3 scripts/validate_registry.py --ard-schema /tmp/ai-catalog.schema.json`
 - [ ] Additional validation is described above when applicable.
 
 ## Safety and evidence

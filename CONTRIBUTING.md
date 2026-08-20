@@ -15,9 +15,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
 python3 -m unittest discover -s tests -p 'test_*.py' -v
-python scripts/check_markdown_links.py
-python scripts/validate_registry.py
+python3 scripts/check_markdown_links.py
+
+ARD_COMMIT=5fa2f5aef790b478319f6a3b43adf4661b0ed0e0
+curl --fail --location --proto '=https' --tlsv1.2 \
+  "https://raw.githubusercontent.com/ards-project/ard-spec/${ARD_COMMIT}/spec/schemas/ai-catalog.schema.json" \
+  --output /tmp/ai-catalog.schema.json
+python3 scripts/validate_registry.py --ard-schema /tmp/ai-catalog.schema.json
 ```
+
+The ARD commit above matches the immutable schema pin used by CI. Keeping the local command on the same pin ensures the catalog compatibility check exercised before a pull request is the same one CI will run. Update the pin only as part of the deliberate ARD-version workflow described below.
 
 The Markdown check is offline: it validates repository-local targets without fetching external URLs and rejects links that escape the repository root.
 
