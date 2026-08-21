@@ -26,7 +26,7 @@ python3 scripts/validate_registry.py --ard-schema /tmp/ai-catalog.schema.json
 
 The ARD commit above matches the immutable schema pin used by CI. Keeping the local command on the same pin ensures the catalog compatibility check exercised before a pull request is the same one CI will run. Update the pin only as part of the deliberate ARD-version workflow described below.
 
-The Markdown check is offline: it validates repository-local targets without fetching external URLs and rejects links that escape the repository root.
+The Markdown check is offline: it validates repository-local links and image targets without fetching external URLs and rejects targets that escape the repository root.
 
 ## Adding a resource example
 
@@ -49,7 +49,7 @@ For a deliberately invalid example, place it under `examples/rejected/` and expl
 - [ ] No real secrets, private evidence or confidential data are included.
 - [ ] JSON files parse successfully.
 - [ ] The validator and regression tests pass.
-- [ ] Repository-local Markdown links pass the offline link check.
+- [ ] Repository-local Markdown links and images pass the offline check.
 - [ ] Approved catalog entries have approved governance records.
 - [ ] Source references are immutable.
 - [ ] Permissions and risk tier agree.
