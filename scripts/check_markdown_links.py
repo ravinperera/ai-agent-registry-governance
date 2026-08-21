@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate repository-local Markdown links without network access."""
+"""Validate repository-local Markdown links and images without network access."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-INLINE_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+INLINE_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 REFERENCE_LINK_RE = re.compile(r"^\s*\[[^\]]+\]:\s*(\S+)")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 
@@ -116,12 +116,12 @@ def main() -> int:
 
     errors = validate(Path(args.root))
     if errors:
-        print("Markdown link validation failed:", file=sys.stderr)
+        print("Markdown link/image validation failed:", file=sys.stderr)
         for error in errors:
             print(f"- {error}", file=sys.stderr)
         return 1
 
-    print("Markdown local links are valid.")
+    print("Markdown local links and images are valid.")
     return 0
 
 
