@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -44,6 +45,28 @@ def _inside_root(root: Path, candidate: Path) -> bool:
     return True
 
 
+def repository_markdown_files(root: Path) -> list[Path]:
+    """Return tracked Markdown files, with a filesystem fallback outside Git."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--", "*.md"],
+            check=True,
+            capture_output=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return sorted(
+            path
+            for path in root.rglob("*.md")
+            if path.is_file() and ".git" not in path.parts
+        )
+
+    return sorted(
+        root / raw.decode("utf-8")
+        for raw in result.stdout.split(b"\0")
+        if raw
+    )
+
+
 def links_in_markdown(path: Path) -> list[tuple[int, str]]:
     links: list[tuple[int, str]] = []
     in_fence = False
@@ -67,10 +90,7 @@ def validate(root: Path) -> list[str]:
     root = root.resolve()
     errors: list[str] = []
 
-    for markdown_file in sorted(root.rglob("*.md")):
-        if ".git" in markdown_file.parts:
-            continue
-
+    for markdown_file in repository_markdown_files(root):
         for line_number, raw_target in links_in_markdown(markdown_file):
             target = _clean_target(raw_target)
             if not _is_local_target(target):
