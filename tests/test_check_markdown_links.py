@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -55,6 +56,19 @@ class MarkdownLinkValidationTests(unittest.TestCase):
                 "```markdown\n[Example](not-a-real-file.md)\n```\n",
                 encoding="utf-8",
             )
+
+            self.assertEqual(check_markdown_links.validate(root), [])
+
+    def test_ignores_untracked_markdown_inside_git_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            subprocess.run(["git", "init", "--quiet"], cwd=root, check=True)
+            (root / "README.md").write_text("# Tracked\n", encoding="utf-8")
+            (root / "scratch.md").write_text(
+                "[Missing](docs/not-present.md)\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "add", "README.md"], cwd=root, check=True)
 
             self.assertEqual(check_markdown_links.validate(root), [])
 
