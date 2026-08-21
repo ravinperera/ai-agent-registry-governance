@@ -1,5 +1,7 @@
 # AI Agent Registry Governance
 
+[![Validate registry governance](https://github.com/ravinperera/ai-agent-registry-governance/actions/workflows/validate.yml/badge.svg)](https://github.com/ravinperera/ai-agent-registry-governance/actions/workflows/validate.yml)
+
 Policy-as-code starter for cataloguing, approving and validating AI agents, skills, MCP servers and other agentic resources.
 
 > Discover broadly. Approve deliberately. Delegate narrowly. Prove human authority.
