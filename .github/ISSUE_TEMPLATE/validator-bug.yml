@@ -1,0 +1,74 @@
+name: Validator or schema bug
+description: Report a reproducible false positive, false negative, schema defect, or validation inconsistency.
+title: "[validator] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the policy-as-code checks. Use fictional or fully redacted data only. Do not include credentials, private approval evidence, customer data, internal hostnames, or sensitive security details.
+
+  - type: dropdown
+    id: defect-type
+    attributes:
+      label: Defect type
+      options:
+        - False positive - valid input is rejected
+        - False negative - invalid input is accepted
+        - Schema or policy inconsistency
+        - Catalog or ARD validation issue
+        - Other validator defect
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-surface
+    attributes:
+      label: Affected command or file
+      description: Name the validator command, schema, governance record, or catalog path involved.
+      placeholder: python3 scripts/validate_registry.py --ard-schema /tmp/ai-catalog.schema.json
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should the validator or schema have accepted or rejected?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include the exact non-sensitive error message or unexpected pass result when available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal redacted reproduction
+      description: Provide the smallest fictional or fully redacted JSON/YAML/input that demonstrates the defect.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: version-context
+    attributes:
+      label: Version and pin context
+      description: Include the repository commit/branch and, when relevant, the ARD schema pin or schemaVersion.
+      placeholder: "Repository commit: ...; schemaVersion: 1.1; ARD commit: ..."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed credentials, private approval evidence, customer data, internal security details, and other sensitive values from this report.
+          required: true
+        - label: I checked that the reproduction is minimal and uses fictional or fully redacted data.
+          required: true
