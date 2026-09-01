@@ -171,6 +171,28 @@ class RegistryValidatorTests(unittest.TestCase):
         self.assertTrue(any("governance.reviewBy" in error for error in errors))
         self.assertFalse(any("governance.reviewBy" in error for error in future_errors))
 
+    def test_pending_resource_rejects_approval_only_metadata(self) -> None:
+        record = approved_record("2026-08-10")
+        record["governance"]["status"] = "pending"
+        record["governance"]["approvedAt"] = "2026-08-01"
+
+        errors = validator.policy_errors(record, date(2026, 8, 9))
+        pending_errors = [error for error in errors if "pending resources must not carry approval metadata" in error]
+
+        self.assertEqual(
+            pending_errors,
+            [
+                "policy governance.approvedBy: pending resources must not carry approval metadata",
+                "policy governance.approvedAt: pending resources must not carry approval metadata",
+                "policy governance.reviewBy: pending resources must not carry approval metadata",
+            ],
+        )
+
+        for field in ("approvedBy", "approvedAt", "reviewBy"):
+            record["governance"].pop(field, None)
+        clean_errors = validator.policy_errors(record, date(2026, 8, 9))
+        self.assertFalse(any("pending resources must not carry approval metadata" in error for error in clean_errors))
+
     def test_restricted_egress_requires_explicit_non_wildcard_allowlist(self) -> None:
         record = approved_record("2026-08-10")
         network = record["permissions"]["network"]
