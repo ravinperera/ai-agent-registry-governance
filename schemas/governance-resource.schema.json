@@ -63,10 +63,16 @@
             "egress": {"enum": ["none", "restricted", "unrestricted"]},
             "allowedDestinations": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
           },
-          "allOf": [{
-            "if": {"properties": {"egress": {"const": "restricted"}}, "required": ["egress"]},
-            "then": {"properties": {"allowedDestinations": {"minItems": 1}}}
-          }]
+          "allOf": [
+            {
+              "if": {"properties": {"egress": {"const": "none"}}, "required": ["egress"]},
+              "then": {"properties": {"allowedDestinations": {"maxItems": 0}}}
+            },
+            {
+              "if": {"properties": {"egress": {"const": "restricted"}}, "required": ["egress"]},
+              "then": {"properties": {"allowedDestinations": {"minItems": 1}}}
+            }
+          ]
         },
         "secrets": {"enum": ["none", "metadata", "read"]},
         "dataClassifications": {
