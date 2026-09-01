@@ -169,8 +169,10 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
         if not governance.get("evidence"):
             errors.append("policy governance.evidence: approved resources require retained evidence")
 
-    if status == "pending" and governance.get("approvedBy"):
-        errors.append("policy governance.approvedBy: pending resources must not appear approved")
+    if status == "pending":
+        for field in ("approvedBy", "approvedAt", "reviewBy"):
+            if field in governance:
+                errors.append(f"policy governance.{field}: pending resources must not carry approval metadata")
 
     return errors
 
