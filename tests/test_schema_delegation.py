@@ -58,6 +58,20 @@ class DelegationSchemaTests(unittest.TestCase):
 
         self.assertTrue(any("False was expected" in error for error in errors))
 
+    def test_no_egress_requires_empty_destination_allowlist(self) -> None:
+        record = load_json(EXAMPLE_PATH)
+        record["permissions"]["network"] = {
+            "egress": "none",
+            "allowedDestinations": ["api.example.org"],
+        }
+
+        errors = errors_for(record)
+        self.assertTrue(any("expected to be empty" in error or "too long" in error for error in errors))
+
+        record["permissions"]["network"]["allowedDestinations"] = []
+        valid_errors = errors_for(record)
+        self.assertEqual(valid_errors, [])
+
 
 if __name__ == "__main__":
     unittest.main()
