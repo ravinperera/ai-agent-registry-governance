@@ -174,6 +174,11 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
             if field in governance:
                 errors.append(f"policy governance.{field}: pending resources must not carry approval metadata")
 
+    if status == "rejected":
+        for field in ("approvedBy", "approvedAt", "reviewBy"):
+            if field in governance:
+                errors.append(f"policy governance.{field}: rejected resources must not carry approval metadata")
+
     return errors
 
 
