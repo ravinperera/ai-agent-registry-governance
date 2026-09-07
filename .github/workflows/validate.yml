@@ -46,6 +46,9 @@ jobs:
       - name: Validate repository-local Markdown links
         run: python3 scripts/check_markdown_links.py
 
+      - name: Validate catalog governance links
+        run: python3 scripts/check_catalog_governance_links.py
+
       - name: Validate governance records and ARD catalog
         run: |
           python3 scripts/validate_registry.py \
