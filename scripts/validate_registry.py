@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from datetime import date
+from ipaddress import ip_network
 from pathlib import Path
 from typing import Any
 
@@ -67,6 +68,18 @@ def is_immutable_source(source: dict[str, Any]) -> bool:
         return True
     version = str(source.get("version", "")).strip().lower()
     return bool(version and version not in MUTABLE_REFS and SEMVER_RE.fullmatch(version))
+
+
+def is_catch_all_destination(destination: str) -> bool:
+    """Reject values that would make restricted egress effectively unrestricted."""
+    value = destination.strip()
+    if not value or value == "*":
+        return True
+    try:
+        return ip_network(value, strict=False).prefixlen == 0
+    except ValueError:
+        # Hostnames and other explicit non-CIDR destinations remain permitted.
+        return False
 
 
 def policy_errors(record: dict[str, Any], today: date) -> list[str]:
@@ -150,8 +163,11 @@ def policy_errors(record: dict[str, Any], today: date) -> list[str]:
 
     if egress == "restricted":
         destinations = network.get("allowedDestinations", [])
-        if not destinations or "*" in destinations:
-            errors.append("policy permissions.network.allowedDestinations: restricted egress needs an explicit allowlist")
+        if not destinations or any(is_catch_all_destination(dest) for dest in destinations):
+            errors.append(
+                "policy permissions.network.allowedDestinations: "
+                "restricted egress needs an explicit allowlist without catch-all or blank destinations"
+            )
 
     if status == "approved":
         for field in ("team", "serviceOwner", "securityContact"):
