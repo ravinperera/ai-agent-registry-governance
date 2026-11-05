@@ -210,6 +210,28 @@ class RegistryValidatorTests(unittest.TestCase):
         empty_errors = validator.policy_errors(record, date(2026, 8, 9))
         self.assertTrue(any("allowedDestinations" in error for error in empty_errors))
 
+    def test_restricted_egress_rejects_catch_all_cidrs(self) -> None:
+        record = approved_record("2026-08-10")
+        network = record["permissions"]["network"]
+        network["egress"] = "restricted"
+        today = date(2026, 8, 9)
+
+        for destination in ("0.0.0.0/0", "::/0", "192.0.2.7/0", "2001:db8::1/0", "*", "  "):
+            with self.subTest(rejected_destination=destination):
+                network["allowedDestinations"] = [destination]
+                errors = validator.policy_errors(record, today)
+                self.assertTrue(any("allowedDestinations" in error for error in errors), errors)
+
+        network["allowedDestinations"] = ["api.example.org", "::/0"]
+        mixed_errors = validator.policy_errors(record, today)
+        self.assertTrue(any("allowedDestinations" in error for error in mixed_errors), mixed_errors)
+
+        for destination in ("api.example.org", "192.0.2.0/24", "2001:db8::/48"):
+            with self.subTest(allowed_destination=destination):
+                network["allowedDestinations"] = [destination]
+                errors = validator.policy_errors(record, today)
+                self.assertFalse(any("allowedDestinations" in error for error in errors), errors)
+
     def test_approved_resource_rejects_unrestricted_egress(self) -> None:
         record = approved_record("2026-08-10")
         record["permissions"]["network"] = {"egress": "unrestricted"}
