@@ -88,5 +88,41 @@ class CatalogGovernanceLinkTests(unittest.TestCase):
         self.assertTrue(any("published catalog status must be approved" in error for error in errors))
 
 
+    def test_unvalidated_record_locations_are_rejected(self) -> None:
+        # These files look approved but are never scanned by validate_registry.py.
+        for record_ref in (
+            "docs/forged-approval.json",
+            "registry/resources/nested/review.json",
+            "registry/resources/review.txt",
+        ):
+            with self.subTest(record_ref=record_ref):
+                root, catalog_path, directory = self.make_fixture(record_ref=record_ref)
+                self.addCleanup(directory.cleanup)
+                untracked = root / record_ref
+                untracked.parent.mkdir(parents=True, exist_ok=True)
+                untracked.write_text(
+                    (root / "registry/resources/review.json").read_text(encoding="utf-8"),
+                    encoding="utf-8",
+                )
+
+                errors = checker.validate(catalog_path, root)
+                self.assertTrue(any("direct .json file" in error for error in errors), errors)
+                self.assertNotIn(record_ref, " ".join(errors))
+
+    def test_registry_symlink_to_unvalidated_document_is_rejected(self) -> None:
+        root, catalog_path, directory = self.make_fixture(record_ref="registry/resources/alias.json")
+        self.addCleanup(directory.cleanup)
+        fake_record = root / "docs/forged-approval.json"
+        fake_record.parent.mkdir(parents=True)
+        fake_record.write_text(
+            (root / "registry/resources/review.json").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        (root / "registry/resources/alias.json").symlink_to(fake_record)
+
+        errors = checker.validate(catalog_path, root)
+        self.assertTrue(any("must resolve to a direct .json file" in error for error in errors), errors)
+
+
 if __name__ == "__main__":
     unittest.main()
