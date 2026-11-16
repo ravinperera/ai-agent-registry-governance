@@ -74,6 +74,13 @@ def validate(catalog_path: Path, root: Path = ROOT) -> list[str]:
             errors.append(f"entries[{index}].metadata.governanceRecord: path escapes repository root")
             continue
 
+        if record_path.parent != root / "registry" / "resources":
+            errors.append(
+                f"entries[{index}].metadata.governanceRecord: "
+                "must resolve to a direct .json file in registry/resources"
+            )
+            continue
+
         if not record_path.is_file():
             errors.append(f"entries[{index}].metadata.governanceRecord: referenced record does not exist")
             continue
