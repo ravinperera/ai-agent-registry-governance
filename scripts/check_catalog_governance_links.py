@@ -51,11 +51,34 @@ def validate(catalog_path: Path, root: Path = ROOT) -> list[str]:
             errors.append(f"entries[{index}].metadata.governanceRecord: local record path is required")
             continue
 
-        record_path = (root / record_ref).resolve()
+        # Only direct registry/resources/*.json files are validated by validate_registry.py.
+        # Resolve after checking the lexical path so aliases and nested/unscanned files
+        # cannot be presented as independently approved governance records.
+        record_ref_path = Path(record_ref)
+        if (
+            record_ref_path.is_absolute()
+            or len(record_ref_path.parts) != 3
+            or record_ref_path.parts[:2] != ("registry", "resources")
+            or record_ref_path.suffix != ".json"
+        ):
+            errors.append(
+                f"entries[{index}].metadata.governanceRecord: "
+                "must reference a direct .json file in registry/resources"
+            )
+            continue
+
+        record_path = (root / record_ref_path).resolve()
         try:
             record_path.relative_to(root)
         except ValueError:
             errors.append(f"entries[{index}].metadata.governanceRecord: path escapes repository root")
+            continue
+
+        if record_path.parent != root / "registry" / "resources":
+            errors.append(
+                f"entries[{index}].metadata.governanceRecord: "
+                "must resolve to a direct .json file in registry/resources"
+            )
             continue
 
         if not record_path.is_file():
